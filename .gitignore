@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# 연구 실행 결과는 로컬 원본 데이터로 취급하고 Git에 올리지 않는다
+runs/*
+!runs/.gitkeep
+
+*.tmp
+.env
+.env.*
