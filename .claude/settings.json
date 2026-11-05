@@ -1,0 +1,29 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git branch -D:*)",
+      "Bash(docker push:*)",
+      "Bash(vercel:*)",
+      "Bash(npx vercel:*)",
+      "PowerShell(git commit:*)",
+      "PowerShell(git push:*)",
+      "PowerShell(git merge:*)",
+      "PowerShell(git rebase:*)",
+      "PowerShell(git reset --hard:*)",
+      "PowerShell(git branch -D:*)",
+      "PowerShell(docker push:*)",
+      "PowerShell(vercel:*)",
+      "PowerShell(npx vercel:*)",
+      "mcp__claude_ai_Vercel__create_deployment",
+      "mcp__claude_ai_Vercel__request_promote"
+    ]
+  }
+}
