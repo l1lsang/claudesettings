@@ -1,0 +1,301 @@
+{
+  "product": {
+    "label": "Products, services, apps, startups, features",
+    "generators": [
+      {
+        "id": "creative",
+        "name": { "en": "Creative", "ko": "창의" },
+        "lens": "Unconventional approaches. Reframe the problem, borrow mechanisms from unrelated domains, combine things nobody combines. Novelty never excuses ignoring the stated constraints."
+      },
+      {
+        "id": "problem",
+        "name": { "en": "Problem-first", "ko": "문제 중심" },
+        "lens": "Start from a concrete, recurring pain: who exactly has it, when, how often, and how they cope today. The solution must follow from that pain, not the other way round."
+      },
+      {
+        "id": "business",
+        "name": { "en": "Business", "ko": "비즈니스" },
+        "lens": "Demand and sustainability. Why people would adopt it and keep using it, how the first users are reached, and how it sustains itself (operations, revenue, cost) after the first version."
+      }
+    ],
+    "judges": [
+      {
+        "id": "feasibility",
+        "name": { "en": "Feasibility Judge", "ko": "실현 가능성 심사위원" },
+        "lens": "Can this actually be built and run within the stated team, time and budget? Hunt for hidden costs: data acquisition, external APIs, regulation, operations, cold start, maintenance."
+      },
+      {
+        "id": "innovation",
+        "name": { "en": "Innovation Judge", "ko": "혁신성 심사위원" },
+        "lens": "Is the problem worth solving, and what is genuinely new compared with existing alternatives (products, communities, manual workarounds)? Expose repackaged existing things."
+      }
+    ],
+    "criteria": [
+      { "id": "problemValue", "label": { "en": "Problem value", "ko": "문제 해결 가치" }, "description": "How painful, frequent and widespread the problem is, and how much the idea actually relieves it.", "weight": 25 },
+      { "id": "originality", "label": { "en": "Originality", "ko": "독창성" }, "description": "How new the approach is, not just the packaging.", "weight": 20 },
+      { "id": "feasibility", "label": { "en": "Feasibility", "ko": "구현 가능성" }, "description": "Buildable and operable within the stated constraints.", "weight": 20 },
+      { "id": "testability", "label": { "en": "Testability", "ko": "검증 용이성" }, "description": "How quickly and cheaply the core hypothesis can be validated with a first version.", "weight": 20 },
+      { "id": "differentiation", "label": { "en": "Differentiation", "ko": "차별성" }, "description": "A clear reason to choose this over existing alternatives.", "weight": 15 }
+    ],
+    "fieldHints": {
+      "title": "Product / service name",
+      "oneLiner": "One sentence: what it is and for whom",
+      "problem": "The concrete problem it solves",
+      "audience": "Primary users and their situation",
+      "approach": "How it works",
+      "differentiation": "Difference from existing alternatives",
+      "firstSteps": "Core feature of the first version / first experiment"
+    },
+    "planHint": "Week 1"
+  },
+
+  "research": {
+    "label": "Research questions, theses, experiments, studies",
+    "generators": [
+      {
+        "id": "frontier",
+        "name": { "en": "Frontier", "ko": "개척" },
+        "lens": "Bold questions at the edge of the field. Unexpected connections between literatures, methods or datasets. Aim for questions that would change what people believe."
+      },
+      {
+        "id": "rigor",
+        "name": { "en": "Rigor", "ko": "엄밀성" },
+        "lens": "Questions that can be answered cleanly: identifiable effects, obtainable data, sound designs, clear falsification criteria. Prefer a sharp answer to a vague big question."
+      },
+      {
+        "id": "impact",
+        "name": { "en": "Impact", "ko": "임팩트" },
+        "lens": "Start from consequences. Questions whose answers matter to practitioners, policy, or adjacent fields, and say who would act differently given the result."
+      }
+    ],
+    "judges": [
+      {
+        "id": "methodologist",
+        "name": { "en": "Methodologist", "ko": "방법론 심사위원" },
+        "lens": "Validity, identification, confounds, sample size, data access, ethics approval, and whether the timeline and skills are realistic."
+      },
+      {
+        "id": "domain-expert",
+        "name": { "en": "Domain Expert", "ko": "분야 전문가 심사위원" },
+        "lens": "Significance and novelty relative to existing literature. Would the relevant community care? Flag questions that are already answered or trivially answered."
+      }
+    ],
+    "criteria": [
+      { "id": "significance", "label": { "en": "Significance", "ko": "중요성" }, "description": "How much the answer would matter to the field or to practice.", "weight": 25 },
+      { "id": "novelty", "label": { "en": "Novelty", "ko": "새로움" }, "description": "Not already answered; a genuinely new question or method.", "weight": 20 },
+      { "id": "rigor", "label": { "en": "Rigor", "ko": "엄밀성" }, "description": "Soundness of the design; ability to produce a trustworthy answer.", "weight": 20 },
+      { "id": "feasibility", "label": { "en": "Feasibility", "ko": "실행 가능성" }, "description": "Data, resources, skills and time available under the constraints.", "weight": 20 },
+      { "id": "clarity", "label": { "en": "Clarity", "ko": "명확성" }, "description": "Well-posed and falsifiable; clear what result would count as an answer.", "weight": 15 }
+    ],
+    "fieldHints": {
+      "title": "Working title of the study",
+      "oneLiner": "The research question in one sentence",
+      "problem": "The gap in knowledge and why it matters",
+      "audience": "Who cares about the answer (community, practitioners, decision-makers)",
+      "approach": "Method, study design, data",
+      "differentiation": "How it differs from prior work (claim only what you are sure of)",
+      "firstSteps": "Pilot study or first experiment"
+    },
+    "planHint": "Month 1"
+  },
+
+  "marketing": {
+    "label": "Campaigns, content, brand, growth, launch ideas",
+    "generators": [
+      {
+        "id": "bold",
+        "name": { "en": "Bold", "ko": "파격" },
+        "lens": "Attention-grabbing, unexpected concepts. Cultural hooks, formats nobody in the category uses, ideas people would talk about."
+      },
+      {
+        "id": "insight",
+        "name": { "en": "Insight", "ko": "인사이트" },
+        "lens": "Start from a sharp audience insight: a tension, habit, or unspoken truth. Build the message from that insight."
+      },
+      {
+        "id": "growth",
+        "name": { "en": "Growth", "ko": "그로스" },
+        "lens": "Channels, funnels and measurable outcomes. How the idea spreads, what it costs per result, and how it is tested and iterated."
+      }
+    ],
+    "judges": [
+      {
+        "id": "strategist",
+        "name": { "en": "Brand Strategist", "ko": "브랜드 전략 심사위원" },
+        "lens": "Brand fit, quality of the audience insight, clarity and memorability of the message, reputational risk."
+      },
+      {
+        "id": "performance",
+        "name": { "en": "Performance Marketer", "ko": "퍼포먼스 심사위원" },
+        "lens": "Reach, cost, executability with the stated budget and team, measurability, speed to learn."
+      }
+    ],
+    "criteria": [
+      { "id": "audienceFit", "label": { "en": "Audience fit", "ko": "타깃 적합성" }, "description": "Rooted in a real insight about the target audience.", "weight": 25 },
+      { "id": "originality", "label": { "en": "Originality", "ko": "독창성" }, "description": "Stands out in the category; memorable.", "weight": 20 },
+      { "id": "clarity", "label": { "en": "Message clarity", "ko": "메시지 명확성" }, "description": "The audience gets the point immediately.", "weight": 15 },
+      { "id": "executability", "label": { "en": "Executability", "ko": "실행 가능성" }, "description": "Doable with the stated budget, team and timeline.", "weight": 20 },
+      { "id": "measurability", "label": { "en": "Measurability", "ko": "측정 가능성" }, "description": "Clear success metrics; can be tested small before scaling.", "weight": 20 }
+    ],
+    "fieldHints": {
+      "title": "Campaign / concept name",
+      "oneLiner": "The idea in one sentence",
+      "problem": "The marketing problem or goal",
+      "audience": "Target audience and the insight about them",
+      "approach": "Concept, message, channels, mechanics",
+      "differentiation": "How it differs from what competitors and the category usually do",
+      "firstSteps": "Smallest test to run first"
+    },
+    "planHint": "Week 1"
+  },
+
+  "strategy": {
+    "label": "Business strategy, decisions, policy, process and organization improvements",
+    "generators": [
+      {
+        "id": "radical",
+        "name": { "en": "Radical", "ko": "급진" },
+        "lens": "Reframe the goal and challenge the assumptions behind it. Options that change the game rather than optimize the current one."
+      },
+      {
+        "id": "operator",
+        "name": { "en": "Operator", "ko": "실행가" },
+        "lens": "Pragmatic, incremental options that can be executed with existing people, systems and budget, starting next week."
+      },
+      {
+        "id": "stakeholder",
+        "name": { "en": "Stakeholder", "ko": "이해관계자" },
+        "lens": "Start from the people affected: incentives, likely resistance, fairness, second-order effects. Options that people will actually adopt."
+      }
+    ],
+    "judges": [
+      {
+        "id": "risk",
+        "name": { "en": "Risk Judge", "ko": "리스크 심사위원" },
+        "lens": "Execution risk, cost, dependencies, reversibility, failure modes, legal and compliance exposure."
+      },
+      {
+        "id": "impact",
+        "name": { "en": "Impact Judge", "ko": "임팩트 심사위원" },
+        "lens": "Size and durability of the effect on the stated goal, strategic coherence, opportunity cost."
+      }
+    ],
+    "criteria": [
+      { "id": "impact", "label": { "en": "Impact", "ko": "효과" }, "description": "Size and durability of the effect on the goal.", "weight": 25 },
+      { "id": "feasibility", "label": { "en": "Feasibility", "ko": "실행 가능성" }, "description": "Executable with available people, systems, budget and time.", "weight": 20 },
+      { "id": "riskControl", "label": { "en": "Risk control", "ko": "리스크 관리" }, "description": "Higher score = lower or better-managed downside; reversible if it fails.", "weight": 20 },
+      { "id": "costEfficiency", "label": { "en": "Cost efficiency", "ko": "비용 효율" }, "description": "Effect relative to money, time and attention spent.", "weight": 15 },
+      { "id": "acceptance", "label": { "en": "Acceptance", "ko": "수용성" }, "description": "Likelihood that the affected people adopt and support it.", "weight": 20 }
+    ],
+    "fieldHints": {
+      "title": "Name of the option",
+      "oneLiner": "The option in one sentence",
+      "problem": "The goal or problem it addresses",
+      "audience": "Who is affected and who must act",
+      "approach": "What exactly would be done",
+      "differentiation": "How it differs from the status quo and the obvious alternatives",
+      "firstSteps": "First reversible step or pilot"
+    },
+    "planHint": "Phase 1"
+  },
+
+  "creative": {
+    "label": "Stories, games, events, art, shows, content series, names, concepts",
+    "generators": [
+      {
+        "id": "wild",
+        "name": { "en": "Wild", "ko": "파격" },
+        "lens": "Surprising premises, genre collisions, bold formal choices. Ideas that make people say 'I have never seen that'."
+      },
+      {
+        "id": "craft",
+        "name": { "en": "Craft", "ko": "완성도" },
+        "lens": "Structure and execution: coherent worlds, characters, mechanics, pacing. Ideas that hold up when developed in depth."
+      },
+      {
+        "id": "audience",
+        "name": { "en": "Audience", "ko": "관객" },
+        "lens": "What the target audience will feel, share and come back for. Emotional payoff first, then the form that delivers it."
+      }
+    ],
+    "judges": [
+      {
+        "id": "critic",
+        "name": { "en": "Critic", "ko": "비평가" },
+        "lens": "Originality, artistic coherence, emotional depth. Call out clichés and derivative work."
+      },
+      {
+        "id": "producer",
+        "name": { "en": "Producer", "ko": "프로듀서" },
+        "lens": "Producibility with the stated resources, audience appeal, scope risk, what it would take to ship."
+      }
+    ],
+    "criteria": [
+      { "id": "originality", "label": { "en": "Originality", "ko": "독창성" }, "description": "Fresh premise or form; not derivative.", "weight": 25 },
+      { "id": "resonance", "label": { "en": "Emotional resonance", "ko": "감정적 울림" }, "description": "Makes the audience feel something strong.", "weight": 25 },
+      { "id": "coherence", "label": { "en": "Coherence", "ko": "완결성" }, "description": "Internally consistent; holds up when developed.", "weight": 20 },
+      { "id": "appeal", "label": { "en": "Audience appeal", "ko": "대중성" }, "description": "The intended audience would seek it out and share it.", "weight": 15 },
+      { "id": "producibility", "label": { "en": "Producibility", "ko": "제작 가능성" }, "description": "Can be made with the stated resources and time.", "weight": 15 }
+    ],
+    "fieldHints": {
+      "title": "Working title",
+      "oneLiner": "Logline / the concept in one sentence",
+      "problem": "What it offers the audience (the itch it scratches)",
+      "audience": "Target audience",
+      "approach": "Premise, structure, form, key elements",
+      "differentiation": "What sets it apart from similar works",
+      "firstSteps": "First prototype, draft or sample to make"
+    },
+    "planHint": "Stage 1"
+  },
+
+  "general": {
+    "label": "Anything else: life, learning, education, community, personal projects, mixed topics",
+    "generators": [
+      {
+        "id": "divergent",
+        "name": { "en": "Divergent", "ko": "발산" },
+        "lens": "Unexpected angles and reframings. Question the premise of the topic; borrow from far-away domains."
+      },
+      {
+        "id": "human",
+        "name": { "en": "Human-centered", "ko": "사람 중심" },
+        "lens": "Start from the people involved: what they actually do, feel and struggle with today. Ideas that fit real behavior."
+      },
+      {
+        "id": "pragmatist",
+        "name": { "en": "Pragmatist", "ko": "실용" },
+        "lens": "Simple, cheap, robust ideas that work with what is already available and can be tried immediately."
+      }
+    ],
+    "judges": [
+      {
+        "id": "skeptic",
+        "name": { "en": "Skeptic", "ko": "회의론자" },
+        "lens": "What could go wrong, what is unrealistic, what is being assumed without evidence, what it really costs."
+      },
+      {
+        "id": "visionary",
+        "name": { "en": "Visionary", "ko": "비전가" },
+        "lens": "How much good the idea could do, how new it is, what it could grow into."
+      }
+    ],
+    "criteria": [
+      { "id": "value", "label": { "en": "Value", "ko": "가치" }, "description": "How much it helps with the stated goal.", "weight": 25 },
+      { "id": "originality", "label": { "en": "Originality", "ko": "독창성" }, "description": "Fresh compared with the obvious answers.", "weight": 20 },
+      { "id": "feasibility", "label": { "en": "Feasibility", "ko": "실현 가능성" }, "description": "Doable under the stated constraints.", "weight": 20 },
+      { "id": "testability", "label": { "en": "Testability", "ko": "검증 용이성" }, "description": "Can be tried small and judged quickly.", "weight": 20 },
+      { "id": "robustness", "label": { "en": "Robustness", "ko": "견고성" }, "description": "Still works when things do not go as planned.", "weight": 15 }
+    ],
+    "fieldHints": {
+      "title": "Name of the idea",
+      "oneLiner": "The idea in one sentence",
+      "problem": "The goal or problem it addresses",
+      "audience": "Who it is for",
+      "approach": "How it works",
+      "differentiation": "How it differs from the obvious alternatives",
+      "firstSteps": "First small thing to try"
+    },
+    "planHint": "Step 1"
+  }
+}

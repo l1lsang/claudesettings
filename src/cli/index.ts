@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { AGENT_IDS, buildBrief, expectedFiles, phaseActors, type AgentId } from "../orchestration/briefs";
 import { readEvents } from "../orchestration/persistence";
 import { ArenaRunner, type AdvanceOutcome } from "../orchestration/runner";
+import { createDashboardServer } from "../web/server";
 
 const HELP = `IDEA ARENA CLI
 
@@ -17,6 +18,7 @@ const HELP = `IDEA ARENA CLI
   advance --run <id>                                     검증 후 다음 단계로 전이
   retry   --run <id> [--force]                           FAILED 실행을 실패 단계부터 재시도
   report  --run <id>                                     최종 보고서 출력
+  serve   [--port 4173]                                  로컬 결과 대시보드 (읽기 전용, 127.0.0.1)
 
 공통 옵션: --runs-dir <경로> (기본: ./runs 또는 ARENA_RUNS_DIR)
 `;
@@ -38,6 +40,7 @@ function main(argv: string[]): number {
       run: { type: "string" },
       agent: { type: "string" },
       force: { type: "boolean" },
+      port: { type: "string" },
       "runs-dir": { type: "string" },
     },
     strict: true,
@@ -126,6 +129,24 @@ function main(argv: string[]): number {
       }
       console.log(readFileSync(report, "utf8"));
       return EXIT.ok;
+    }
+
+    case "serve": {
+      const port = Number(values.port ?? process.env.ARENA_PORT ?? 4173);
+      if (!Number.isInteger(port) || port < 0 || port > 65535) throw new UsageError("--port는 0~65535 정수여야 합니다");
+      const server = createDashboardServer(runner);
+      server.on("error", (err: NodeJS.ErrnoException) => {
+        console.error(err.code === "EADDRINUSE" ? `포트 ${port}이(가) 사용 중입니다. --port로 다른 포트를 지정하세요.` : `서버 오류: ${err.message}`);
+        process.exit(EXIT.failed);
+      });
+      server.listen(port, "127.0.0.1", () => {
+        const addr = server.address();
+        const actual = typeof addr === "object" && addr ? addr.port : port;
+        console.log(`IDEA ARENA 대시보드: http://127.0.0.1:${actual}`);
+        console.log(`  데이터: ${runner.runsDir}`);
+        console.log("  읽기 전용 · 이 컴퓨터에서만 접속 가능 · 종료: Ctrl+C");
+      });
+      return EXIT.ok; // 서버가 열려 있는 동안 프로세스는 계속 실행된다
     }
 
     default:

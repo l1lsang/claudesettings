@@ -52,6 +52,7 @@ npm run arena -- advance --run <id>                   # CREATED → GENERATING
 | RESCORING | feasibility, innovation (병렬) | 〃 |
 
 BLINDING, FINALIZING은 `advance`가 자동 처리한다. COMPLETED가 되면 `npm run arena -- report --run <id>`.
+사용자는 별도 터미널에서 `npm run dashboard`로 진행 상황과 결과를 웹으로 볼 수 있다(Lead가 띄울 필요 없음).
 
 ### 실패 시
 - `advance`가 FAILED를 반환하면 `status`로 오류를 보고, 관련 입력·출력 파일을 확인한 뒤 `npm run arena -- retry --run <id>`.
@@ -64,6 +65,7 @@ src/domain/          schemas.ts, scoring.ts, state-machine.ts, constants.ts
 src/orchestration/   runner.ts(단계 핸들러), anonymizer.ts, validator.ts, persistence.ts, briefs.ts, paths.ts
 src/reports/         generator.ts (ranking.json, report.md)
 src/cli/             index.ts
+src/web/             로컬 대시보드 (server.ts, data.ts, public/) — 읽기 전용, runs/에 절대 쓰지 않음
 .claude/agents/      생성자 3명 + 심사위원 2명 정의
 runs/<id>/           실행 데이터 (Git 제외) — 레이아웃은 docs/architecture.md
 ```

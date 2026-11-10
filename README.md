@@ -25,6 +25,19 @@ npm run check             # 타입 검사 + 테스트
 2. [docs/EXECUTION_PROMPT.md](docs/EXECUTION_PROMPT.md)의 프롬프트에 주제를 넣어 붙여 넣는다.
 3. Team Lead가 팀을 만들고 단계마다 CLI로 검증·전이하며 진행한다.
 
+## 결과 대시보드 (로컬 웹)
+
+```powershell
+npm run dashboard                 # http://127.0.0.1:4173  (다른 포트: npm run dashboard -- --port 5000)
+```
+`runs/`의 파일을 그대로 읽어서 보여주는 **읽기 전용** 페이지다. 클라우드·DB 없이 이 컴퓨터에서만 열린다.
+
+- 실행 목록, 진행 단계, 이 단계에서 기다리는 파일
+- 최종 순위와 점수 흐름(최초 → 토론 후 → 최종), 심사 격차·이견 표시
+- 아이디어별 원본/개선본 비교, 항목별 점수(1차·토론 후·재평가), 심사 의견, 토론 기록, MVP 계획
+- 오케스트레이션 지표, 실행 기록
+- 진행 중인 실행은 4초마다 자동 갱신. 작성자(생성 관점)는 연구가 완료된 뒤에만 표시된다.
+
 ## CLI
 
 ```powershell
@@ -36,6 +49,7 @@ npm run arena -- check   --run <id>        # 검증만
 npm run arena -- advance --run <id>        # 검증 후 전이
 npm run arena -- retry   --run <id> [--force]
 npm run arena -- report  --run <id>
+npm run arena -- serve   [--port 4173]     # = npm run dashboard
 ```
 종료 코드: 0 성공 · 1 전이 중단(파일 누락/오류) · 2 사용법 오류 · 3 실패.
 
@@ -48,6 +62,7 @@ src/domain/         스키마(Zod), 점수 산정, 상태 전이 — 순수 로�
 src/orchestration/  단계 핸들러, 익명화, 검증, 원자적 저장, 작업 지시
 src/reports/        순위·보고서
 src/cli/            CLI
+src/web/            로컬 대시보드 서버(node:http) + public/ 정적 페이지(빌드 없음)
 .claude/agents/     에이전트 5명 정의
 tests/              단위 + 전체 실행(e2e) 테스트
 runs/               실행 데이터 (Git 제외)
@@ -62,6 +77,6 @@ v0.1은 비교에 필요한 데이터(최초·토론 후·최종 점수, 점수 
 ## 로드맵
 
 - **v0.1** CLI 연구소 (현재)
-- **v0.2** React 대시보드 — 점수 변화, 토론 기록, 개선 전후 비교
+- **v0.2** 대시보드 — 로컬 읽기 전용 웹 대시보드로 구현됨(`npm run dashboard`)
 - **v0.3** Claude API 기반 실행 엔진 — 웹 UI에서 실행 (API 인증·과금 필요)
 - **v1.0** 평가 실험 플랫폼 — 가중치 실험, 심사위원 편향 분석, 사람 vs AI 평가 비교

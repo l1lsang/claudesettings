@@ -378,6 +378,10 @@ export function defaultConfig(): ArenaConfig {
   };
 }
 
+export class RunNotFoundError extends Error {
+  override name = "RunNotFoundError";
+}
+
 export class ArenaRunner {
   readonly runsDir: string;
   private readonly now: () => Date;
@@ -388,9 +392,9 @@ export class ArenaRunner {
   }
 
   paths(runId: string): RunPaths {
-    if (!/^[\w.-]+$/.test(runId)) throw new Error(`잘못된 실행 ID: ${runId}`);
+    if (!/^[\w-][\w.-]*$/.test(runId) || runId.includes("..")) throw new RunNotFoundError(`잘못된 실행 ID: ${runId}`);
     const dir = join(this.runsDir, runId);
-    if (!existsSync(dir)) throw new Error(`실행을 찾을 수 없습니다: ${runId} (${this.runsDir})`);
+    if (!existsSync(join(dir, "state.json"))) throw new RunNotFoundError(`실행을 찾을 수 없습니다: ${runId} (${this.runsDir})`);
     return runPaths(dir);
   }
 

@@ -75,6 +75,15 @@ runs/<run-id>/
 - 순위: 최종(재평가) 점수 → 동점이면 심사 격차가 작은 쪽 → 문제 해결 가치 평균 → ID.
 - 가중치·임계값은 실행마다 `state.json`의 `config.scoring`에 저장된다(v1.0의 가중치 실험 대비).
 
+## 결과 대시보드
+
+`npm run dashboard` → `src/web/server.ts` (node:http, 의존성 없음).
+
+- 127.0.0.1에만 바인딩하고 Host 헤더도 localhost/127.0.0.1만 허용(DNS 리바인딩 방지). GET/HEAD만 받는다.
+- `src/web/data.ts`가 `runs/<id>/`를 읽어 한 묶음 JSON으로 만든다. 쓰는 중이라 깨진 JSON은 경고로만 처리.
+- `private/generations/`와 `revisions/`는 내보내지 않는다. 작성자 매핑은 COMPLETED일 때만 포함(보고서와 같은 규칙).
+- API: `/api/meta`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/report`. 페이지는 `src/web/public/`의 정적 HTML/CSS/JS(빌드 단계 없음, CSP `default-src 'self'`, 에이전트 텍스트는 textContent로만 삽입).
+
 ## 알려진 한계 (v0.1)
 
 - **익명성은 운영 규칙으로만 보장한다.** 같은 디렉터리를 공유하므로 심사위원이 `private/`을 읽는 것을 기술적으로 막지 않는다. 엄격한 블라인드 실험이 필요하면 다음 단계에서 PreToolUse 훅이나 별도 작업 디렉터리로 파일 접근을 분리한다.
