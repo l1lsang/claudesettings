@@ -6,7 +6,7 @@ Agent Teams는 대화형 세션에서만 팀원을 만들 수 있다(`claude -p`
 ---
 
 ```text
-IDEA ARENA 연구를 실행해줘. 너는 Team Lead다. CLAUDE.md의 "Team Lead 프로토콜"을 먼저 읽고 그대로 따라.
+IDEA ARENA 연구를 실행해줘. 너는 Team Lead다. CLAUDE.md의 "Team Lead 프로토콜"을 먼저 읽고 그대로 따라
 
 주제: <한류 지속성 확보를 위한 전략 및 정책- 산업,국가,시기별 성장,정체,쇠퇴와 지속성 요인 진단-지속 가능한 발전을 위한 기업 전략,공공정책 제안>
 제약:
