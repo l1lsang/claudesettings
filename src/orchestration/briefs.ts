@@ -8,6 +8,7 @@ import {
   type GeneratorId,
   type JudgeId,
 } from "../domain/constants";
+import { getPreset, type IdeaFieldLabels } from "../domain/presets";
 import type { ArenaPhase, ArenaRun } from "../domain/schemas";
 import { readJsonFile } from "./persistence";
 import { rel, type RunPaths } from "./paths";
@@ -54,22 +55,23 @@ export function expectedFiles(run: ArenaRun, paths: RunPaths): ExpectedFile[] {
 
 const isGenerator = (a: AgentId): a is GeneratorId => (GENERATOR_IDS as readonly string[]).includes(a);
 
-function ideaTemplate(withPlan: boolean) {
+/** 아이디어 JSON 형식 예시. 값은 상황 프리셋의 필드 설명이다. */
+export function ideaTemplate(withPlan: boolean, fields: IdeaFieldLabels = getPreset(undefined).fields, planUnit = "주") {
   const base: Record<string, unknown> = {
-    title: "서비스 이름",
-    problem: "해결하려는 구체적 문제",
-    targetUsers: "핵심 사용자",
-    solution: "제안하는 해결 방식",
-    differentiation: "기존 대안과의 차이",
-    mvp: ["핵심 기능 1", "핵심 기능 2"],
+    title: fields.title,
+    problem: fields.problem,
+    targetUsers: fields.targetUsers,
+    solution: fields.solution,
+    differentiation: fields.differentiation,
+    mvp: [`${fields.mvp} 1`, `${fields.mvp} 2`],
     assumptions: ["[가설] 아직 검증하지 않은 가정"],
   };
-  if (withPlan) base.mvpPlan = [{ week: 1, goal: "이번 주 목표", deliverables: ["산출물"] }];
+  if (withPlan) base.mvpPlan = [{ week: 1, goal: `첫 ${planUnit} 목표`, deliverables: ["산출물"] }];
   return base;
 }
 
-function evaluationTemplate(judge: JudgeId, round: 1 | 2, ids: string[]) {
-  const scores = Object.fromEntries(CRITERIA.map((c) => [c, { score: 3, rationale: `${CRITERION_LABELS[c]} 근거` }]));
+export function evaluationTemplate(judge: JudgeId, round: 1 | 2, ids: string[], labels: Record<string, string> = CRITERION_LABELS) {
+  const scores = Object.fromEntries(CRITERIA.map((c) => [c, { score: 3, rationale: `${labels[c]} 근거` }]));
   return {
     judgeId: judge,
     round,
@@ -91,6 +93,8 @@ function evaluationTemplate(judge: JudgeId, round: 1 | 2, ids: string[]) {
 const json = (v: unknown) => "```json\n" + JSON.stringify(v, null, 2) + "\n```";
 
 export function buildBrief(run: ArenaRun, paths: RunPaths, agent: AgentId): string {
+  const preset = getPreset(run.preset);
+  const criterionLabels = Object.fromEntries(CRITERIA.map((c) => [c, preset.criteria[c].label]));
   const label = AGENT_LABELS[agent];
   const header = `# ${label} 작업 지시 — 실행 ${run.runId} / 단계 ${run.phase}\n\n주제: ${run.topic}\n제약: ${run.constraints.length ? run.constraints.join(" / ") : "(없음)"}\n`;
   const none = `${header}\n이 단계(${run.phase})에서 ${label}의 작업은 없습니다.\n`;
@@ -110,7 +114,7 @@ export function buildBrief(run: ArenaRun, paths: RunPaths, agent: AgentId): stri
 - authorNotes(선택)는 심사위원에게 전달되지 않는다.
 
 ## 형식
-${json({ generatorId: agent, ideas: [ideaTemplate(false), "…두 번째 아이디어"] })}
+${json({ generatorId: agent, ideas: [ideaTemplate(false, preset.fields, preset.planUnit), "…두 번째 아이디어"] })}
 `;
     }
     if (run.phase === "REVISING") {
@@ -131,7 +135,7 @@ ${json({
   revisions: [
     {
       ideaId: "IDEA-00X",
-      idea: ideaTemplate(true),
+      idea: ideaTemplate(true, preset.fields, preset.planUnit),
       changelog: [{ change: "바꾼 내용", addresses: "대응한 피드백(심사위원·항목)" }],
       rejectedFeedback: [{ feedback: "수용하지 않은 피드백", reason: "반박 근거" }],
     },
@@ -144,11 +148,9 @@ ${json({
 
   // 심사위원
   const access = `- 읽을 수 있는 곳: \`blind/\`, \`evaluations/\`, \`debates/\`, input.json\n- 읽으면 안 되는 곳: \`private/\`, \`revisions/\` (작성자 정보가 있음)`;
-  const criteria = CRITERIA.map((c) => `  - ${c} (${CRITERION_LABELS[c]}, 가중치 ${run.config.scoring.weights[c]}%)`).join("\n");
-  const lens =
-    agent === "feasibility"
-      ? "당신의 관점: 기술·일정·구현 가능성. 제약 조건 안에서 실제로 만들 수 있는지 냉정하게 본다."
-      : "당신의 관점: 독창성·문제 가치·차별성. 정말 새롭고 의미 있는 문제를 푸는지 본다.";
+  const criteria = CRITERIA.map((c) => `  - ${c} (${preset.criteria[c].label}: ${preset.criteria[c].description}, 가중치 ${run.config.scoring.weights[c]}%)`).join("\n");
+  const judgeDef = preset.judges[agent as JudgeId];
+  const lens = `당신의 관점(${judgeDef.name}): ${judgeDef.lens}`;
 
   if (run.phase === "SCORING" || run.phase === "RESCORING") {
     const round = run.phase === "SCORING" ? 1 : 2;
@@ -171,7 +173,7 @@ ${criteria}
 - 근거 없이 가정한 시장·경쟁·법률·기술 판단은 hypotheses에 가설로 적는다. 사실처럼 쓰지 않는다.
 
 ## 형식 (evaluations 배열에 모든 아이디어를 넣는다)
-${json(evaluationTemplate(agent, round, ids.length ? ids : ["IDEA-001"]))}
+${json(evaluationTemplate(agent, round, ids.length ? ids : ["IDEA-001"], criterionLabels))}
 `;
   }
 

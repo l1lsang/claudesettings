@@ -1,13 +1,12 @@
 import {
-  AGENT_LABELS,
   CRITERIA,
-  CRITERION_LABELS,
   GENERATOR_IDS,
   SCORE_CHANGE_BASIS_LABELS,
   type GeneratorId,
   type JudgeId,
   type ScoreChangeBasis,
 } from "../domain/constants";
+import { getPreset, presetLabels, type PresetLabels } from "../domain/presets";
 import type { BlindIdeaV1, BlindIdeaV2, DebateFile, EvaluationFile, RunInput } from "../domain/schemas";
 import { rankAggregates, round2, type AggregateFile, type DebateResolution, type ScoreVector } from "../domain/scoring";
 import type { MappingFile } from "../orchestration/anonymizer";
@@ -141,11 +140,16 @@ const unique = (items: string[]) => [...new Set(items)];
 export const REQUIRED_REPORT_SECTIONS = ["## 최종 순위", "## TOP 3 상세", "## 오케스트레이션 지표", "## 해석 시 주의"];
 
 export function renderReport(inp: RankingInputs, ranking: RankingFile): string {
+  const preset = getPreset(inp.input.preset);
+  const lb = presetLabels(preset);
+  const AGENT_LABELS = lb.agents;
+  const CRITERION_LABELS = lb.criterionLabels;
   const out: string[] = [];
   const push = (...lines: string[]) => out.push(...lines);
 
   push(`# IDEA ARENA 연구 보고서`, "");
   push(`- **주제**: ${inp.input.topic}`);
+  push(`- **상황**: ${preset.name} — ${preset.description}`);
   push(`- **제약 조건**: ${inp.input.constraints.length ? inp.input.constraints.join(" / ") : "(없음)"}`);
   push(`- **실행 ID**: \`${inp.input.runId}\` (생성 ${inp.input.createdAt})`);
   push(`- **절차**: 독립 생성 6개 → 익명 심사 2인 → 교차 토론 ${ranking.metrics.debateTargets.length}건 → 개선 → 재평가`, "");
@@ -163,7 +167,7 @@ export function renderReport(inp: RankingInputs, ranking: RankingFile): string {
 
   push(`## TOP 3 상세`, "");
   for (const r of ranking.ranking.slice(0, TOP_N)) {
-    push(...renderIdeaDetail(inp, r), "");
+    push(...renderIdeaDetail(inp, r, lb), "");
   }
 
   const rest = ranking.ranking.slice(TOP_N);
@@ -198,13 +202,15 @@ export function renderReport(inp: RankingInputs, ranking: RankingFile): string {
   push(
     `- 모든 점수는 AI 심사위원의 판단이다. AI끼리 높은 점수를 줬다고 실제 품질이 좋아졌다고 단정할 수 없다. 외부(사람) 평가로 교차 검증해야 한다.`,
     `- 시장 수요·경쟁사·법률·기술 가능성에 관한 내용은 별도 근거가 제시되지 않은 한 **가설**이다. 각 아이디어의 "검증해야 할 가설"을 먼저 확인할 것.`,
-    `- 같은 작업 디렉터리를 공유하는 Agent Teams 특성상 익명성은 운영 규칙으로 보장했다(파일 접근 격리 아님).`,
-    `- 개선 후 점수 상승에는 "피드백 반영 효과"와 "같은 심사위원의 재평가 관대화"가 섞여 있을 수 있다. 단일 Claude 베이스라인과 비교 실험이 필요하다.`,
+    `- 익명성: 심사위원에게는 익명화된 아이디어만 전달된다. 다만 문체로 작성자를 추측하는 것까지 막지는 못한다.`,
+    `- 개선 후 점수 상승에는 "피드백 반영 효과"와 "같은 심사위원의 재평가 관대화"가 섞여 있을 수 있다. 단일 모델 베이스라인과 비교 실험이 필요하다.`,
   );
   return `${out.join("\n")}\n`;
 }
 
-function renderIdeaDetail(inp: RankingInputs, r: RankedIdea): string[] {
+function renderIdeaDetail(inp: RankingInputs, r: RankedIdea, lb: PresetLabels): string[] {
+  const AGENT_LABELS = lb.agents;
+  const CRITERION_LABELS = lb.criterionLabels;
   const v1 = must(inp.v1.find((x) => x.ideaId === r.ideaId), `${r.ideaId} v1`);
   const v2 = must(inp.v2.find((x) => x.ideaId === r.ideaId), `${r.ideaId} v2`);
   const evals2 = inp.round2Evaluations
@@ -217,10 +223,10 @@ function renderIdeaDetail(inp: RankingInputs, r: RankedIdea): string[] {
   const L: string[] = [];
   L.push(`### ${r.rank}위. ${v2.title} (${r.ideaId})`, "");
   L.push(`**최종 ${fmt(r.finalScore)}점** · 최초 ${fmt(r.initialScore)} → 토론 후 ${fmt(r.postDebateScore)} → 최종 ${fmt(r.finalScore)} (${signed(r.delta)}) · 생성 관점: ${AGENT_LABELS[r.generatorId]}`, "");
-  L.push(`- **문제**: ${v2.problem}`);
-  L.push(`- **핵심 사용자**: ${v2.targetUsers}`);
-  L.push(`- **해결 방식**: ${v2.solution}`);
-  L.push(`- **차별성**: ${v2.differentiation}`, "");
+  L.push(`- **${lb.fields.problem}**: ${v2.problem}`);
+  L.push(`- **${lb.fields.targetUsers}**: ${v2.targetUsers}`);
+  L.push(`- **${lb.fields.solution}**: ${v2.solution}`);
+  L.push(`- **${lb.fields.differentiation}**: ${v2.differentiation}`, "");
 
   L.push(`#### 심사 점수 (재평가 기준, 0~5)`, "");
   L.push(`| 항목 | ${evals2.map((e) => AGENT_LABELS[e.judgeId]).join(" | ")} |`);
@@ -265,9 +271,9 @@ function renderIdeaDetail(inp: RankingInputs, r: RankedIdea): string[] {
   for (const rj of v2.rejectedFeedback) L.push(`- 수용하지 않음: "${rj.feedback}" — ${rj.reason}`);
   L.push("");
 
-  L.push(`#### MVP 개발 계획`, "");
-  L.push(`핵심 기능: ${v2.mvp.join(", ")}`, "");
-  L.push(`| 주차 | 목표 | 산출물 |`, `|---:|---|---|`);
+  L.push(`#### ${lb.fields.plan}`, "");
+  L.push(`${lb.fields.mvp}: ${v2.mvp.join(", ")}`, "");
+  L.push(`| ${lb.planUnit} | 목표 | 산출물 |`, `|---:|---|---|`);
   for (const s of [...v2.mvpPlan].sort((a, b) => a.week - b.week)) {
     L.push(`| ${s.week} | ${esc(s.goal)} | ${esc(s.deliverables.join(", "))} |`);
   }

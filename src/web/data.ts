@@ -1,5 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { JUDGE_IDS, type JudgeId } from "../domain/constants";
+import { getPreset, presetLabels, type PresetLabels } from "../domain/presets";
 import type { ArenaRun } from "../domain/schemas";
 import type { AggregateFile, DebateResolution } from "../domain/scoring";
 import { expectedFiles, type ExpectedFile } from "../orchestration/briefs";
@@ -10,21 +11,15 @@ import type { DebateAgenda } from "../orchestration/validator";
 import type { RankingFile } from "../reports/generator";
 
 /**
- * 대시보드용 읽기 전용 데이터 묶음. 파일을 절대 쓰지 않는다.
+ * 화면용 읽기 전용 데이터 묶음. 파일을 절대 쓰지 않는다.
  * 에이전트가 쓰는 중인 파일은 깨진 JSON일 수 있으므로 읽기 실패는 null + 경고로 처리한다.
  * 작성자(생성자) 정보는 실행이 COMPLETED일 때만 공개한다 — 보고서와 같은 규칙.
  */
 
-export interface RunSummary {
-  runId: string;
-  topic: string;
-  phase: ArenaRun["phase"];
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface RunBundle {
   state: ArenaRun;
+  /** 상황 프리셋에 맞춘 이름표(에이전트·평가 항목·필드) */
+  labels: PresetLabels;
   expected: ExpectedFile[];
   events: ArenaEvent[];
   authorsRevealed: boolean;
@@ -36,10 +31,6 @@ export interface RunBundle {
   ranking: RankingFile | null;
   hasReport: boolean;
   warnings: string[];
-}
-
-export function listRuns(runner: ArenaRunner): RunSummary[] {
-  return runner.list().map((r) => ({ runId: r.runId, topic: r.topic, phase: r.phase, createdAt: r.createdAt, updatedAt: r.updatedAt }));
 }
 
 export function loadRunBundle(runner: ArenaRunner, runId: string): RunBundle {
@@ -81,6 +72,7 @@ export function loadRunBundle(runner: ArenaRunner, runId: string): RunBundle {
 
   return {
     state,
+    labels: presetLabels(getPreset(state.preset)),
     expected: expectedFiles(state, paths),
     events: readEvents(paths).slice(-50),
     authorsRevealed,

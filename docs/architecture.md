@@ -1,11 +1,21 @@
-# IDEA ARENA v0.1 — 아키텍처
+# IDEA ARENA — 아키텍처
 
 ## 구성
 
-- **Claude Code Agent Teams** — 실제 생성·심사·토론을 하는 주체. Team Lead(메인 세션) + 팀원 5명.
-- **TypeScript 오케스트레이터(CLI)** — 상태 전이, 산출물 검증, 익명화, 점수 계산, 보고서 생성. 상태를 바꾸는 유일한 주체.
+- **GPT 에이전트** (`src/engine/`, `src/orchestration/agent-tasks.ts`) — 생성·심사·토론·개선을 하는 주체. OpenAI 호환 Chat Completions(JSON 모드), 기본 Letsur 게이트웨이.
+  - 에이전트 작업 하나 = 모델 호출(+검증 실패 시 오류를 알려 주고 최대 2회 재작성). 결과는 그 에이전트 몫의 경로에만 쓴다.
+  - 프롬프트에는 그 에이전트가 볼 수 있는 파일만 넣는다(심사위원: blind/·evaluations/·debates/, 생성자: 자기 feedback.json).
+- **TypeScript 오케스트레이터** (`runner.ts`) — 상태 전이, 산출물 검증, 익명화, 점수 계산, 보고서 생성. 상태를 바꾸는 유일한 주체.
+- **진행자** — 단계 담당 에이전트를 병렬로 돌리고 `advance`를 호출한다. 웹은 브라우저(`public/app.js`), CLI는 `autopilot.ts`. (예전 방식: Claude Code Team Lead가 같은 순서를 수동으로)
+- **상황 프리셋** (`src/domain/presets.ts`) — 생성자·심사위원·평가 항목 슬롯의 이름·관점·기준·가중치를 상황(범용, 서비스·창업, 연구, 마케팅, 전략·정책, 창작)에 맞게 바꾼다. `input.json`·`state.json`의 `preset`(없으면 서비스·창업).
 
-에이전트는 정해진 경로에 JSON 파일을 쓰고, Team Lead는 `advance`로 검증·전이를 요청한다. 대화 기록과 실행 상태는 분리되어 있어서 세션이 끊겨도 `runs/<id>/`로 이어서 진행할 수 있다.
+## 웹 앱 (Vercel)
+
+- 서버 DB 없음. 실행 디렉터리 전체(`{상대경로: 내용}`)를 브라우저 IndexedDB가 보관하고 요청마다 `files`로 보낸다.
+- `/api`(함수 하나)는 요청마다 임시 디렉터리에 파일을 펼쳐 오케스트레이터를 디스크 모드 그대로 실행하고, 결과 디렉터리를 묶어 돌려준 뒤 지운다(`workspace.ts`). 그래서 CLI와 웹이 같은 검증·write-once·이벤트 코드를 쓴다.
+- 접근 제어: `APP_PASSWORD`와 비교(상수 시간) → 만료 시각에 HMAC(키=비밀번호) 서명한 HttpOnly·SameSite=Strict 쿠키(7일). 비밀번호를 바꾸면 세션이 모두 무효.
+- 파일 경로는 `[A-Za-z0-9_.-]` 세그먼트만, 최대 300개·4MB. 함수 시간 제한 300초 — 에이전트 작업은 285초 안에서, 남은 시간이 90초 미만이면 재시도하지 않는다.
+- 빌드: `scripts/build-vercel.mjs` → `.vercel/output`(Build Output API v3: static/ + functions/api.func).
 
 ## 상태 머신
 
@@ -75,17 +85,9 @@ runs/<run-id>/
 - 순위: 최종(재평가) 점수 → 동점이면 심사 격차가 작은 쪽 → 문제 해결 가치 평균 → ID.
 - 가중치·임계값은 실행마다 `state.json`의 `config.scoring`에 저장된다(v1.0의 가중치 실험 대비).
 
-## 결과 대시보드
+## 알려진 한계
 
-`npm run dashboard` → `src/web/server.ts` (node:http, 의존성 없음).
-
-- 127.0.0.1에만 바인딩하고 Host 헤더도 localhost/127.0.0.1만 허용(DNS 리바인딩 방지). GET/HEAD만 받는다.
-- `src/web/data.ts`가 `runs/<id>/`를 읽어 한 묶음 JSON으로 만든다. 쓰는 중이라 깨진 JSON은 경고로만 처리.
-- `private/generations/`와 `revisions/`는 내보내지 않는다. 작성자 매핑은 COMPLETED일 때만 포함(보고서와 같은 규칙).
-- API: `/api/meta`, `/api/runs`, `/api/runs/<id>`, `/api/runs/<id>/report`. 페이지는 `src/web/public/`의 정적 HTML/CSS/JS(빌드 단계 없음, CSP `default-src 'self'`, 에이전트 텍스트는 textContent로만 삽입).
-
-## 알려진 한계 (v0.1)
-
-- **익명성은 운영 규칙으로만 보장한다.** 같은 디렉터리를 공유하므로 심사위원이 `private/`을 읽는 것을 기술적으로 막지 않는다. 엄격한 블라인드 실험이 필요하면 다음 단계에서 PreToolUse 훅이나 별도 작업 디렉터리로 파일 접근을 분리한다.
+- GPT 실행에서는 심사위원 프롬프트에 익명 데이터만 들어간다(코드로 보장). 예전 Claude Code 팀 방식은 같은 디렉터리를 공유하므로 운영 규칙으로만 보장된다.
+- 웹 실행 데이터는 그 브라우저에만 있다. 브라우저 데이터를 지우면 사라지므로 내보내기로 백업한다. 여러 기기 공유가 필요하면 Firebase(Firestore)를 저장소로 붙인다.
 - 익명화 검사는 본문에 에이전트 이름이 있는지 보는 경고 수준이다. 문체로 작성자를 추측하는 것은 막지 못한다.
-- 재평가 점수 상승에는 피드백 효과와 같은 심사위원의 관대화가 섞일 수 있다. 단일 Claude 베이스라인과 비교 실험이 필요하다(README "연구 질문").
+- 재평가 점수 상승에는 피드백 효과와 같은 심사위원의 관대화가 섞일 수 있다. 단일 모델 베이스라인과 비교 실험이 필요하다(README "연구 질문").

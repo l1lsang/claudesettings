@@ -10,3 +10,6 @@ runs/*
 *.tmp
 .env
 .env.*
+
+# Vercel 빌드 산출물
+.vercel/

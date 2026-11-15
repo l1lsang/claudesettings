@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CRITERIA, GENERATOR_IDS, JUDGE_IDS, SCORE_CHANGE_BASES } from "./constants";
+import { PRESET_IDS } from "./presets";
 
 /**
  * 에이전트가 작성하는 파일은 모두 여기 정의된 스키마로 검증한다.
@@ -26,6 +27,8 @@ export type ArenaPhase = z.infer<typeof ArenaPhaseSchema>;
 export const GeneratorIdSchema = z.enum(GENERATOR_IDS);
 export const JudgeIdSchema = z.enum(JUDGE_IDS);
 export const CriterionSchema = z.enum(CRITERIA);
+/** 상황 프리셋(presets.ts). 없으면 예전 실행 = 서비스·창업 */
+export const PresetIdSchema = z.enum(PRESET_IDS);
 export const IdeaIdSchema = z.string().regex(/^IDEA-\d{3}$/, "IDEA-001 형식이어야 합니다");
 
 // ─── 실행 입력 / 상태 ──────────────────────────────────────────────
@@ -35,6 +38,7 @@ export const RunInputSchema = z
     runId: text,
     topic: text.max(4000),
     constraints: textList,
+    preset: PresetIdSchema.optional(),
     createdAt: z.iso.datetime(),
   })
   .strict();
@@ -74,6 +78,7 @@ export const ArenaRunSchema = z
     runId: text,
     topic: text,
     constraints: textList,
+    preset: PresetIdSchema.optional(),
     phase: ArenaPhaseSchema,
     previousPhase: ArenaPhaseSchema.optional(),
     createdAt: z.iso.datetime(),

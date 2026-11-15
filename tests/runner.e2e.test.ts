@@ -104,7 +104,7 @@ describe("ArenaRunner — 전체 실행", () => {
     expect((readJsonFile(p.aggregate(2)) as AggregateFile).round).toBe(2);
 
     const report = readFileSync(p.report, "utf8");
-    for (const s of ["## 최종 순위", "## TOP 3 상세", "실패 가능성", "검증해야 할 가설", "반박과 개선 과정", "MVP 개발 계획", "## 해석 시 주의"]) {
+    for (const s of ["## 최종 순위", "## TOP 3 상세", "실패 가능성", "검증해야 할 가설", "반박과 개선 과정", "실행 계획", "## 해석 시 주의"]) {
       expect(report).toContain(s);
     }
 

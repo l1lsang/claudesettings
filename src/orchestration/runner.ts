@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DEFAULT_SCORING, GENERATOR_IDS, JUDGE_IDS, type GeneratorId, type ScoringSettings } from "../domain/constants";
+import { DEFAULT_PRESET, getPreset, presetWeights, type PresetId } from "../domain/presets";
 import {
   BlindIdeaV1Schema,
   BlindIdeaV2Schema,
@@ -280,6 +281,7 @@ const HANDLERS: Partial<Record<ArenaPhase, PhaseHandler>> = {
 };
 
 function buildFeedback(p: RunPaths, g: GeneratorId): FeedbackPackage {
+  const preset = getPreset(loadInput(p).preset);
   const mapping = loadMapping(p);
   const v1 = loadBlindV1(p);
   const round1 = loadRound1(p);
@@ -333,7 +335,7 @@ function buildFeedback(p: RunPaths, g: GeneratorId): FeedbackPackage {
       "각 아이디어마다 개선본(version 2)을 작성한다. 원본은 수정하지 않는다.",
       "타당한 피드백은 반영하고 changelog에 어떤 피드백에 대응했는지 적는다.",
       "동의하지 않는 피드백은 무조건 수용하지 말고 rejectedFeedback에 근거와 함께 반박한다. 자신의 관점을 유지하라.",
-      "mvpPlan에 주 단위 개발 계획을 넣는다. 주제의 팀 규모·기간 제약을 지켜야 한다.",
+      `mvpPlan에 ${preset.planUnit} 단위 ${preset.fields.plan}을 넣는다(week = ${preset.planUnit} 번호). 주제의 팀 규모·기간 제약을 지켜야 한다.`,
       "본문에 자신의 에이전트 이름이나 역할을 쓰지 않는다(익명 재평가).",
     ],
     ideas,
@@ -367,14 +369,15 @@ export function newRunId(now: Date): string {
   return `${d}-${t}-${randomBytes(2).toString("hex")}`;
 }
 
-export function defaultConfig(): ArenaConfig {
+export function defaultConfig(preset?: PresetId): ArenaConfig {
+  const weights = preset ? presetWeights(getPreset(preset)) : { ...DEFAULT_SCORING.weights };
   return {
     generatorCount: 3,
     ideasPerGenerator: 2,
     judgeCount: 2,
     maxDebateRounds: 1,
     maxRevisionRounds: 1,
-    scoring: { ...DEFAULT_SCORING, weights: { ...DEFAULT_SCORING.weights } },
+    scoring: { ...DEFAULT_SCORING, weights },
   };
 }
 
@@ -398,7 +401,7 @@ export class ArenaRunner {
     return runPaths(dir);
   }
 
-  create(topic: string, constraints: string[] = []): ArenaRun {
+  create(topic: string, constraints: string[] = [], preset: PresetId = DEFAULT_PRESET): ArenaRun {
     const now = this.now();
     const runId = newRunId(now);
     const dir = join(this.runsDir, runId);
@@ -412,6 +415,7 @@ export class ArenaRunner {
       runId,
       topic,
       constraints: constraints.map((c) => c.trim()).filter(Boolean),
+      preset,
       createdAt: ts,
     });
     writeJsonOnce(paths.input, input);
@@ -420,14 +424,15 @@ export class ArenaRunner {
       runId,
       topic: input.topic,
       constraints: input.constraints,
+      preset,
       phase: "CREATED",
       createdAt: ts,
       updatedAt: ts,
-      config: defaultConfig(),
+      config: defaultConfig(preset),
       artifacts: {},
     };
     saveState(paths, run);
-    appendEvent(paths, { ts, type: "RUN_CREATED", phase: "CREATED", details: { topic: input.topic, constraints: input.constraints } });
+    appendEvent(paths, { ts, type: "RUN_CREATED", phase: "CREATED", details: { topic: input.topic, constraints: input.constraints, preset } });
     return run;
   }
 

@@ -1,24 +1,26 @@
 # IDEA ARENA — 프로젝트 규칙
 
-여러 Claude 에이전트가 아이디어를 **독립 생성 → 익명 심사 → 교차 토론 → 개선 → 재평가**하는 로컬 연구 도구다.
+여러 AI 에이전트(GPT, OpenAI 호환 API)가 아이디어를 **독립 생성 → 익명 심사 → 교차 토론 → 개선 → 재평가**하는 로컬 연구 도구다.
 목표는 합의가 아니라, 서로 다른 관점이 근거를 갖고 끝까지 경쟁하는 과정을 데이터로 남기는 것이다.
 
-## 두 가지 작업 모드
+## 작업 모드
 
 | 모드 | 하는 일 | 규칙 |
 |---|---|---|
 | **개발** | `src/`, `tests/` 코드 수정 | 아래 "개발 규칙" |
-| **연구 실행** | Agent Team으로 실제 아이디어 연구 | 아래 "Team Lead 프로토콜". 프롬프트는 `docs/EXECUTION_PROMPT.md` |
-
-두 모드는 **별도 Claude Code 세션**에서 진행한다(한 세션에 팀은 하나만 유지된다).
+| **연구 실행 (기본)** | 웹 앱(Vercel 또는 `npm run dev`) 또는 `npm run arena -- auto` | GPT 에이전트가 자동 진행. README 참고 |
+| 연구 실행 (예전 방식) | Claude Code Agent Team으로 수동 진행 | 아래 "Team Lead 프로토콜". 프롬프트는 `docs/EXECUTION_PROMPT.md` |
 
 ## 개발 규칙
 
-- 스택: Node.js + TypeScript + Zod + Vitest. 서버·DB·로그인 없음.
+- 스택: Node.js + TypeScript + Zod + Vitest. 배포는 Vercel(Build Output API, `scripts/build-vercel.mjs`). DB 없음 — 웹 실행 데이터는 브라우저(IndexedDB)에 저장. Firebase는 기기 간 공유가 필요해질 때만 도입한다.
+- 비밀 값(`LETSUR_API_KEY`, `APP_PASSWORD`)은 환경 변수(.env / Vercel)에만 둔다. 코드·문서·테스트에 넣지 않는다.
+- 모델 호출은 `src/engine/llm.ts`만 한다. 에이전트가 보는 데이터는 `src/orchestration/agent-tasks.ts`의 프롬프트 구성에서 결정된다 — 심사위원 프롬프트에 `private/`, `revisions/` 내용을 넣지 않는다.
 - 변경 후 반드시 `npm run check` (typecheck + test) 통과.
 - `src/domain/`은 순수 로직(스키마, 점수, 상태 전이)만. 파일 I/O는 `src/orchestration/`에서만.
 - 파생 파일은 입력만으로 결정되어야 한다(현재 시각·난수 금지). 재시도 시 write-once 충돌을 막기 위해서다.
-- 스키마를 바꾸면 `briefs.ts`의 템플릿, `.claude/agents/*.md`, 테스트 fixture를 같이 고친다.
+- 스키마를 바꾸면 `briefs.ts`의 템플릿, `src/engine/prompts.ts`, `.claude/agents/*.md`, 테스트 fixture(`tests/fixtures.ts`, `tests/fake-llm.ts`)를 같이 고친다.
+- 상황 프리셋(`src/domain/presets.ts`)은 슬롯의 이름·관점·기준·가중치만 바꾼다. 가중치 합은 100, 프리셋 ID는 실행 데이터에 저장되므로 바꾸지 않는다.
 - `runs/`는 원본 연구 데이터다. Git에 올리지 않고, 코드 변경 때문에 기존 실행 파일을 고치지 않는다.
 
 ## Team Lead 프로토콜 (연구 실행)
@@ -52,7 +54,7 @@ npm run arena -- advance --run <id>                   # CREATED → GENERATING
 | RESCORING | feasibility, innovation (병렬) | 〃 |
 
 BLINDING, FINALIZING은 `advance`가 자동 처리한다. COMPLETED가 되면 `npm run arena -- report --run <id>`.
-사용자는 별도 터미널에서 `npm run dashboard`로 진행 상황과 결과를 웹으로 볼 수 있다(Lead가 띄울 필요 없음).
+결과는 `npm run arena -- export --run <id>`로 내보내 웹 화면의 "가져오기"로 볼 수 있다.
 
 ### 실패 시
 - `advance`가 FAILED를 반환하면 `status`로 오류를 보고, 관련 입력·출력 파일을 확인한 뒤 `npm run arena -- retry --run <id>`.
@@ -61,11 +63,13 @@ BLINDING, FINALIZING은 `advance`가 자동 처리한다. COMPLETED가 되면 `n
 
 ## 디렉터리
 ```
-src/domain/          schemas.ts, scoring.ts, state-machine.ts, constants.ts
-src/orchestration/   runner.ts(단계 핸들러), anonymizer.ts, validator.ts, persistence.ts, briefs.ts, paths.ts
+src/domain/          schemas.ts, scoring.ts, state-machine.ts, constants.ts, presets.ts
+src/engine/          llm.ts(OpenAI 호환 클라이언트), prompts.ts(에이전트 프롬프트, 순수)
+src/orchestration/   runner.ts(단계 핸들러), agent-tasks.ts(GPT 에이전트 작업), autopilot.ts, anonymizer.ts, validator.ts, persistence.ts, briefs.ts, paths.ts
 src/reports/         generator.ts (ranking.json, report.md)
 src/cli/             index.ts
-src/web/             로컬 대시보드 (server.ts, data.ts, public/) — 읽기 전용, runs/에 절대 쓰지 않음
+src/web/             웹 앱 — api.ts, auth.ts, workspace.ts(요청마다 임시 디렉터리), http.ts, server.ts(로컬), vercel.ts, data.ts, public/
+scripts/             build-vercel.mjs
 .claude/agents/      생성자 3명 + 심사위원 2명 정의
 runs/<id>/           실행 데이터 (Git 제외) — 레이아웃은 docs/architecture.md
 ```
