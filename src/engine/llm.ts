@@ -38,7 +38,7 @@ export class LlmError extends Error {
 }
 
 export const DEFAULT_BASE_URL = "https://gw.letsur.ai/v1";
-export const DEFAULT_MODEL = "gpt-5.5";
+export const DEFAULT_MODEL = "gpt-6.1-sol";
 
 export interface ModelConfig {
   generator: string;

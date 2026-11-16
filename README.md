@@ -45,7 +45,7 @@ Claude Code 없이 **OpenAI 호환 API 키(Letsur 게이트웨이)** 하나로 �
    |---|---|---|
    | `APP_PASSWORD` | 웹 앱 로그인 비밀번호 | ✓ |
    | `LETSUR_API_KEY` | platform.letsur.ai에서 받은 키 | ✓ |
-   | `ARENA_MODEL` | 모든 에이전트 모델 (기본 `gpt-5.5`) | |
+   | `ARENA_MODEL` | 모든 에이전트 모델 (기본 `gpt-6.1-sol`) | |
    | `ARENA_GENERATOR_MODEL` / `ARENA_JUDGE_MODEL` | 생성자·심사위원 모델을 따로 지정 | |
    | `LETSUR_BASE_URL` | 기본 `https://gw.letsur.ai/v1` (다른 OpenAI 호환 게이트웨이도 가능) | |
 
